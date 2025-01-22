@@ -3,31 +3,53 @@
 
 import machine as m
 import time
+from MAX6675 import MAX6675
+import network
+import urequests
+from WLAN import networkDetails
+import mypysql as pym
 
-# Define the SPI pins
-sck = m.Pin(18, m.Pin.OUT)
-mosi = m.Pin(23, m.Pin.OUT)
-miso = m.Pin(19, m.Pin.IN)
-cs = m.Pin(5, m.Pin.OUT)
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
 
-# Create the SPI object
-spi = m.SPI(1, baudrate=100000, polarity=0, phase=0)
+ssid = str(networkDetails.SSID)
+password = str(networkDetails.PASSWORD)
 
-# Function to read the temperature from the MAX6675 sensor
+# print(ssid, password)
 
-def read_temp():
-    cs.value(0)
-    time.sleep_ms(1)
-    data = spi.read(2)
-    cs.value(1)
-    temp = (data[0] << 8 | data[1]) >> 3
-    return temp * 0.25
+wlan.connect(ssid, password)
 
-# Main loop
+so = m.Pin(15, m.Pin.IN)
+sck = m.Pin(13, m.Pin.OUT)
+cs = m.Pin(14, m.Pin.OUT)
+led = m.Pin(25, m.Pin.OUT)
+
+thermo = MAX6675(sck, cs, so)
+
+max_wait = 20
+while max_wait > 0 and not wlan.isconnected():
+    print("Connecting to WiFi...")
+    time.sleep(1)
+    max_wait -= 1
+
+connection = pym.connect(host="192.168.1.104",
+                         user="root",
+                         password="Password123",
+                         database="pico")
+
+with connection:
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM pico")
+        result = cursor.fetchall()
+        print(result)
 
 while True:
-    temp = read_temp()
-    print('Temperature: ', temp)
-    time.sleep(1)
+    print(thermo.read())
+    data = thermo.read()
+    led.toggle()
+    print("Temperature: ", data)
 
-# End of main.py
+    print("Sending data to server")
+    r = urequests.get("http://www.google.com")
+    print(r.content)
+    time.sleep(1.1)
