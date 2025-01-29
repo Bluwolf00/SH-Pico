@@ -2,3 +2,4 @@ Pico/WLAN/
 Pico/mypysql/
 TODO.md
 WebServer/node_modules
+WebServer/.env
