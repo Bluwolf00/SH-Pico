@@ -3,6 +3,7 @@
 
 import machine as m
 import time
+import datetime
 from MAX6675 import MAX6675
 import network
 import urequests
@@ -50,6 +51,16 @@ while True:
     print("Temperature: ", data)
 
     print("Sending data to server")
-    r = urequests.get("http://www.google.com")
-    print(r.content)
+    # r = urequests.get("http://www.google.com")
+    # print(r.content)
+
+    url = "https://example-website.com/api/temperature"
+
+    json_data = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "temperature": data,
+        "location": "Kitchen"
+    }
+
+    r = urequests.post(url, json=json_data)
     time.sleep(1.1)

@@ -1,2 +1,4 @@
-WLAN/
-mypysql/
+Pico/WLAN/
+Pico/mypysql/
+TODO.md
+WebServer/node_modules
